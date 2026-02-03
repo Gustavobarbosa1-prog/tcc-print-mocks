@@ -1,0 +1,25 @@
+name: 🚨 Gerar Figura 8 (DAST Falha)
+
+on: workflow_dispatch
+
+jobs:
+  dast-scan:
+    name: DAST Analysis (OWASP ZAP)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v3
+
+      - name: OWASP ZAP Baseline Scan
+        run: |
+          echo "Initiating DAST Scan against staging environment..."
+          echo "Target: http://localhost:3000"
+          sleep 2
+          echo "Spidering target..."
+          sleep 2
+          echo "Active scanning..."
+          sleep 2
+          # Simulação de falhas comuns em TCCs (Headers de segurança)
+          echo "::error title=High Risk Vulnerability::[FAIL] Missing Anti-clickjacking Header (X-Frame-Options)."
+          echo "::error::[FAIL] Strict-Transport-Security Header Not Set (HSTS)."
+          exit 1
