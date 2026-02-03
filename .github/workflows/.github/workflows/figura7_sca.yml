@@ -1,0 +1,23 @@
+name: 🚨 Gerar Figura 7 (SCA Falha)
+
+on: workflow_dispatch # Botão manual para facilitar sua vida
+
+jobs:
+  dependency-check:
+    name: SCA Scan (Dependabot)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v3
+
+      - name: Run Dependency Audit
+        run: |
+          echo "Initiating Software Composition Analysis (SCA)..."
+          echo "Target: package-lock.json"
+          sleep 2
+          echo "Scanning 432 dependencies..."
+          sleep 2
+          # Simulação do erro com formato oficial do GitHub
+          echo "::error title=Critical Vulnerability Detected::Package 'lodash' (v4.17.15) has a known vulnerability: CVE-2020-8203 (Prototype Pollution)."
+          echo "::error::Upgrade 'lodash' to v4.17.19 or later immediately."
+          exit 1
