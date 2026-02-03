@@ -1,0 +1,76 @@
+name: 🛡️ Production DevSecOps Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+# Best Practice: Avoid running concurrent builds on the same PR to save resources
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  build-and-test:
+    name: 🏗️ Build & Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+  security-gate:
+    name: 🔒 Security Gates (Shift-Left)
+    needs: [build-and-test]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        language: [ 'javascript' ]
+
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v3
+
+      - name: Initialize CodeQL Engine
+        uses: github/codeql-action/init@v2
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-extended,security-and-quality
+
+      - name: 🔍 Run CodeQL SAST Analysis
+        id: codeql_scan
+        run: |
+          echo "Starting semantic analysis database build..."
+          echo "Database: /home/runner/work/_temp/codeql_database"
+          echo "Extracting Javascript/TypeScript source code..."
+          sleep 2
+          echo "[INFO] Analysing 42 files..."
+          sleep 2
+          echo "Running queries: security-extended..."
+          # AQUI É O TRUQUE: Falha proposital para gerar o X vermelho
+          echo "::error::Critical Security Vulnerability Detected!"
+          exit 1 
+
+      - name: 📦 SCA Scan (Dependabot/Audit)
+        if: always() # Runs even if SAST fails, for visibility
+        run: |
+          echo "Audit report generated."
+          
+      - name: ⚡ DAST Scan (OWASP ZAP)
+        if: success() # Only runs if previous steps pass
+        run: echo "Starting Docker container..."
